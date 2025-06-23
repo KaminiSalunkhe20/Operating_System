@@ -1,0 +1,263 @@
+#include <stdio.h> 
+#include <stdbool.h> 
+ 
+#define MAX_PROCESSES 10 
+#define MAX_RESOURCES 10 
+ 
+void printHorizontalLine()  
+{ 
+    printf("+---------+------------+------------+------------+------------+\n"); 
+} 
+ 
+void printTableHeader()  
+{ 
+    printf("\n"); 
+    printHorizontalLine(); 
+    printf("| Process | Allocation | Max Need   | Need       | Available  |\n"); 
+    printHorizontalLine(); 
+} 
+ 
+void printResourceRow(int process_num, int alloc[], int max[], int need[], int avail[], int m)  
+{ 
+    //Process 
+    printf("|   P%d    |", process_num + 1); 
+    // Allocation 
+    for (int j = 0; j < m; j++) printf(" %d", alloc[j]); 
+    printf("      |"); 
+     
+    // Maximum Need 
+    for (int j = 0; j < m; j++) printf(" %d", max[j]); 
+    printf("      |"); 
+     
+    // Remaianing Need 
+    for (int j = 0; j < m; j++) printf(" %d", need[j]); 
+    printf("      |"); 
+     
+    // Available Resources 
+    for (int j = 0; j < m; j++) printf(" %d", avail[j]); 
+    printf("      |"); 
+     
+    printf("\n"); 
+    printHorizontalLine();  // Added this line to print horizontal line after each row 
+} 
+ 
+int main()  
+{ 
+    int n, m; 
+    int alloc[MAX_PROCESSES][MAX_RESOURCES]; 
+    int max[MAX_PROCESSES][MAX_RESOURCES]; 
+    int total[MAX_RESOURCES]; 
+    int avail[MAX_RESOURCES]; 
+    int need[MAX_PROCESSES][MAX_RESOURCES]; 
+    bool finished[MAX_PROCESSES] = {false}; 
+    int safe_sequence[MAX_PROCESSES]; 
+    int sequence_index = 0; 
+ 
+    printf("Enter the number of resources: "); 
+    scanf("%d", &m); 
+ 
+    printf("\nEnter total instances for each resource:\n"); 
+    for (int i = 0; i < m; i++)  
+    { 
+        printf("%c: ", 'A' + i); 
+        scanf("%d", &total[i]); 
+    } 
+ 
+    printf("\nEnter the number of processes: "); 
+    scanf("%d", &n); 
+ 
+    printf("\nEnter allocation for each process:\n"); 
+    for (int i = 0; i < n; i++)  
+    { 
+        printf("\nProcess P%d:\n", i + 1); 
+        for (int j = 0; j < m; j++)  
+        { 
+            printf("%c: ", 'A' + j); 
+            scanf("%d", &alloc[i][j]); 
+        } 
+    } 
+ 
+    printf("\nEnter maximum need for each process:\n"); 
+    for (int i = 0; i < n; i++)  
+    { 
+        printf("\nProcess P%d:\n", i + 1); 
+        for (int j = 0; j < m; j++)  
+        { 
+            printf("%c: ", 'A' + j); 
+            scanf("%d", &max[i][j]); 
+        } 
+    } 
+ 
+    // Calculate initial available 
+    for (int j = 0; j < m; j++)  
+    { 
+        avail[j] = total[j]; 
+        for (int i = 0; i < n; i++)  
+        { 
+            avail[j] -= alloc[i][j]; 
+        } 
+    } 
+ 
+    // Calculate remaining need matrix 
+    for (int i = 0; i < n; i++)  
+    { 
+        for (int j = 0; j < m; j++)  
+        { 
+            need[i][j] = max[i][j] - alloc[i][j]; 
+        } 
+    } 
+ 
+    int temp_avail[MAX_RESOURCES]; 
+    for (int j = 0; j < m; j++) temp_avail[j] = avail[j]; 
+ 
+    // Safety algorithm 
+    while (sequence_index < n)  
+    { 
+        bool found = false; 
+        for (int i = 0; i < n; i++)  
+        { 
+            if (!finished[i])  
+            { 
+                bool can_execute = true; 
+                for (int j = 0; j < m; j++)  
+                { 
+                    if (need[i][j] > temp_avail[j])  
+                    { 
+                        can_execute = false; 
+                        break; 
+                    } 
+                } 
+ 
+                if (can_execute)  
+                { 
+                    safe_sequence[sequence_index++] = i; 
+                    for (int j = 0; j < m; j++)  
+                    { 
+                        temp_avail[j] += alloc[i][j]; 
+                    } 
+                    finished[i] = true; 
+                    found = true; 
+                } 
+            } 
+        } 
+        if (!found) break; 
+    } 
+ 
+    if (sequence_index == n)  
+    { 
+        printf("\n"); 
+        printTableHeader(); 
+ 
+        int curr_avail[MAX_RESOURCES]; 
+        for (int j = 0; j < m; j++) curr_avail[j] = avail[j]; 
+         
+        for (int i = 0; i < n; i++) 
+        { 
+            int p = safe_sequence[i]; 
+            printResourceRow(p, alloc[p], max[p], need[p], curr_avail, m); 
+            for (int j = 0; j < m; j++) 
+            { 
+                curr_avail[j] += alloc[p][j]; 
+            } 
+        } 
+ 
+        printf("\nSystem is in a safe state.\nSafe sequence: "); 
+        for (int i = 0; i < n; i++)  
+        { 
+            printf("P%d", safe_sequence[i] + 1); 
+            if (i != n - 1) printf(" -> "); 
+        } 
+        printf("\n"); 
+    }  
+    else  
+    { 
+        printf("\nSystem is not in a safe state.\n"); 
+    } 
+ 
+    return 0; 
+} 
+
+
+
+Output:
+//Enter the number of resources: 3
+
+Enter total instances for each resource:
+A: 10
+B: 5
+C: 7
+
+Enter the number of processes: 5
+
+Enter allocation for each process:
+
+Process P1:
+A: 0
+B: 1
+C: 0
+
+Process P2:
+A: 2
+B: 0
+C: 0
+
+Process P3:
+A: 3
+B: 0
+C: 2
+
+Process P4:
+A: 2
+B: 1
+C: 1
+
+Process P5:
+A: 0
+B: 0
+C: 2
+
+Enter maximum need for each process:
+
+Process P1:
+A: 7
+B: 5
+C: 3
+
+Process P2:
+A: 3
+B: 2
+C: 2
+
+Process P3:
+A: 9
+B: 0
+C: 2
+
+Process P4:
+A: 4
+B: 2
+C: 2
+
+Process P5:
+A: 5
+B: 3
+C: 3
+
+
++---------+------------+------------+------------+------------+
+| Process | Allocation | Max Need   | Need       | Available  |
++---------+------------+------------+------------+------------+
+|   P2    | 2 0 0      | 3 2 2      | 1 2 2      | 3 3 2      |
++---------+------------+------------+------------+------------+
+|   P4    | 2 1 1      | 4 2 2      | 2 1 1      | 5 3 2      |
++---------+------------+------------+------------+------------+
+|   P5    | 0 0 2      | 5 3 3      | 5 3 1      | 7 4 3      |
++---------+------------+------------+------------+------------+
+|   P1    | 0 1 0      | 7 5 3      | 7 4 3      | 7 4 5      |
++---------+------------+------------+------------+------------+
+|   P3    | 3 0 2      | 9 0 2      | 6 0 0      | 7 5 5      |
++---------+------------+------------+------------+------------+
+
+System is in a safe state.
+Safe sequence: P2 -> P4 -> P5 -> P1 -> P3
+
