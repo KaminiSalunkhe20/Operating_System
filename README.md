@@ -1,0 +1,69 @@
+#include<stdio.h> 
+void main() { 
+    int b[10], i, j = 1, n, temp, burst[10], wait[10], turn[10], p[10], a = 1, q, tat[10], t1 = 0; 
+    float t = 0, w = 0; 
+    printf("Enter the number of processes & time quantum: "); 
+    scanf("%d%d", &n, &q); 
+    printf("Enter burst time: "); 
+    for (i = 1; i <= n; i++) 
+        scanf("%d", &burst[i]); 
+    burst[0] = 0; 
+    b[0] = 0; 
+    tat[0] = 0; 
+    p[0] = 0; 
+    printf("\n\n\t\t Gantt chart\n"); 
+    printf("  \n"); 
+    for (i = 1; i <= n; i++) 
+        b[i] = burst[i]; 
+    for (i = 1; i <= n; i++) { 
+        if (b[i] > 0) { 
+            a = 1; 
+            printf("P%d\t|", i); 
+            if (b[i] >= q) { 
+                t1 = t1 + q; 
+                p[j] = t1; 
+                j++; 
+            } else if (b[i] < q) { 
+                t1 = t1 + b[i]; 
+                p[j] = t1; 
+                j++; 
+            } 
+            b[i] = b[i] - q; 
+            if (b[i] <= 0) 
+                tat[i] = t1; 
+        } else 
+            a++; 
+        if (a == n + 1) 
+            break; 
+        if (i == n) 
+            i = 0; 
+    } 
+    printf("\n  \n"); 
+    for (i = 0; i < j; i++) 
+        printf("%d\t", p[i]); 
+    for (i = 1; i <= n; i++) { 
+        t = t + tat[i]; 
+        w = w + tat[i] - burst[i]; 
+    } 
+    w = w / n; 
+    t = t / n; 
+printf("\nThe average waiting time is %.2f", w); 
+printf("\nThe average turn around time is %.2f", t); 
+} 
+
+
+Output.
+//Enter the number of processes & time quantum: 5
+3
+Enter burst time: 4
+7
+5
+3
+2
+		 Gantt chart
+  
+P1	|P2	|P3	|P4	|P5	|P1	|P2	|P3	|P2	|
+  
+0	3	6	9	12	14	15	18	20	21	
+The average waiting time is 12.20
+//The average turn around time is 16.40
