@@ -1,0 +1,51 @@
+#include <stdio.h>
+#include <stdbool.h>
+
+int main() {
+    int n, frameSize;
+    int referenceString[100], frames[10];
+    int index = 0, faults = 0, hits = 0;
+    bool found;
+
+    printf("Enter number of pages in reference string: ");
+    scanf("%d", &n);
+
+    printf("Enter reference string (space separated): ");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &referenceString[i]);
+    }
+
+    printf("Enter number of frames: ");
+    scanf("%d", &frameSize);
+
+    for (int i = 0; i < frameSize; i++) frames[i] = -1;
+
+    for (int i = 0; i < n; i++) {
+        found = false;
+        for (int j = 0; j < frameSize; j++) {
+            if (frames[j] == referenceString[i]) {
+                found = true;
+                hits++;
+                break;
+            }
+        }
+        if (!found) {
+            frames[index] = referenceString[i];
+            index = (index + 1) % frameSize;
+            faults++;
+        }
+    }
+
+    printf("\nFIFO Page Replacement\n");
+    printf("Page Hits: %d\n", hits);
+    printf("Page Faults: %d\n", faults);
+    return 0;
+}
+//Input :
+Enter number of pages in reference string: 7
+Enter reference string (space separated): 1 3 0 3 5 6 3
+Enter number of frames: 3 
+//output
+FIFO Page Replacement
+Page Hits: 1
+Page Faults: 6
