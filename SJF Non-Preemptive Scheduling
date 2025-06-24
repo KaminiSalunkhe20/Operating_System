@@ -1,0 +1,80 @@
+#include <stdio.h>
+#include <stdbool.h>
+
+typedef struct {
+    char pid[5];
+    int at, bt, ct, tat, wt;
+    bool completed;
+} Process;
+
+void swap(Process *a, Process *b) {
+    Process temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+void sjfNonPreemptive(Process p[], int n) {
+    int completed = 0, currentTime = 0;
+    float totalTAT = 0, totalWT = 0;
+
+    while (completed < n) {
+        int idx = -1, minBT = 1e9;
+
+        for (int i = 0; i < n; i++) {
+            if (!p[i].completed && p[i].at <= currentTime && p[i].bt < minBT) {
+                minBT = p[i].bt;
+                idx = i;
+            }
+        }
+
+        if (idx != -1) {
+            currentTime += p[idx].bt;
+            p[idx].ct = currentTime;
+            p[idx].tat = p[idx].ct - p[idx].at;
+            p[idx].wt = p[idx].tat - p[idx].bt;
+            p[idx].completed = true;
+            completed++;
+        } else {
+            currentTime++;
+        }
+    }
+
+    printf("\nPID\tAT\tBT\tCT\tTAT\tWT\n");
+    for (int i = 0; i < n; i++) {
+        totalTAT += p[i].tat;
+        totalWT += p[i].wt;
+        printf("%s\t%d\t%d\t%d\t%d\t%d\n", p[i].pid, p[i].at, p[i].bt, p[i].ct, p[i].tat, p[i].wt);
+    }
+
+    printf("\nAverage TAT = %.2f", totalTAT / n);
+    printf("\nAverage WT = %.2f\n", totalWT / n);
+}
+
+int main() {
+    int n;
+    printf("Enter number of processes: ");
+    scanf("%d", &n);
+    Process p[n];
+
+    for (int i = 0; i < n; i++) {
+        printf("Enter Process ID, Arrival Time, Burst Time for process %d: ", i+1);
+        scanf("%s %d %d", p[i].pid, &p[i].at, &p[i].bt);
+        p[i].completed = false;
+    }
+
+    sjfNonPreemptive(p, n);
+    return 0;
+}
+Enter number of processes: 4
+P1 0 7
+P2 2 4
+P3 4 1
+P4 5 4
+PID	AT	BT	CT	TAT	WT
+P1	0	7	7	7	0
+P3	4	1	8	4	3
+P2	2	4	12	10	6
+P4	5	4	16	11	7
+
+Average TAT = 8.00
+Average WT = 4.00
