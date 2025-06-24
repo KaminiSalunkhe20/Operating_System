@@ -1,0 +1,73 @@
+#include <stdio.h>
+#include <stdbool.h>
+
+int predict(int pages[], int n, int frames[], int index, int frameSize) {
+    int farthest = index, res = -1;
+    for (int i = 0; i < frameSize; i++) {
+        int j;
+        for (j = index; j < n; j++) {
+            if (frames[i] == pages[j]) {
+                if (j > farthest) {
+                    farthest = j;
+                    res = i;
+                }
+                break;
+            }
+        }
+        if (j == n)
+            return i;
+    }
+    return (res == -1) ? 0 : res;
+}
+
+int main() {
+    int n, frameSize;
+    int pages[100], frames[10];
+    int faults = 0, hits = 0;
+    int filled = 0;
+    bool found;
+
+    printf("Enter number of pages in reference string: ");
+    scanf("%d", &n);
+
+    printf("Enter reference string (space separated): ");
+    for (int i = 0; i < n; i++) scanf("%d", &pages[i]);
+
+    printf("Enter number of frames: ");
+    scanf("%d", &frameSize);
+
+    for (int i = 0; i < frameSize; i++) frames[i] = -1;
+
+    for (int i = 0; i < n; i++) {
+        found = false;
+        for (int j = 0; j < frameSize; j++) {
+            if (frames[j] == pages[i]) {
+                hits++;
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            if (filled < frameSize)
+                frames[filled++] = pages[i];
+            else
+                frames[predict(pages, n, frames, i + 1, frameSize)] = pages[i];
+            faults++;
+        }
+    }
+
+    printf("\nOptimal Page Replacement\n");
+    printf("Page Hits: %d\n", hits);
+    printf("Page Faults: %d\n", faults);
+    return 0;
+}
+//input
+Enter number of pages in reference string: 7
+Enter reference string (space separated): 1 3 0 3 5 6 3
+Enter number of frames: 3
+
+//Output
+Optimal Page Replacement
+Page Hits: 2
+Page Faults: 5
